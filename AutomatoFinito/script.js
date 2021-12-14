@@ -3,16 +3,10 @@ var edges = null;
 var network = null;
 var qtd = 0
 var qtd_edge = 0
-let inicial = 0
+let inicial = null
 let final = []
 
-let path = [
-    [null, 'a', 'a', null, null]
-    , [null, null, null, 'b', null]
-    , [null, null, null, null, 'c']
-    , [null, null, null, null, null]
-    , [null, null, null, null, null]
-]
+let path = []
 
 
 
@@ -25,6 +19,19 @@ function iniPath() {
                 path[i][j] = null
     }
     console.log(path);
+}
+
+function deleteColumn(array, remIdx) {
+    return array.map(function (arr) {
+        return arr.filter(function (el, idx) { return idx !== remIdx });
+    });
+};
+
+function deleteRow(arr, row) {
+    arr = arr.slice(0); // make copy
+    arr.splice(row, 1);
+    var x = deleteColumn(arr, row)
+    return x;
 }
 // randomly create some nodes and edges
 var nodes = Array(5)
@@ -77,6 +84,16 @@ function draw() {
                 document.getElementById("node-operation").innerText = "Edit Node";
                 editNode(data, cancelNodeEdit, callback);
             },
+            deleteNode: function (data, callback) {
+                qtd--
+                let selectedNodeId = network.getSelectedNodes()[0]
+                final.pop(selectedNodeId)
+                if (inicial == selectedNodeId)
+                    inicial = 0
+                path = deleteRow(path, selectedNodeId)
+                console.log(path);
+                callback(data)
+            },
             addEdge: function (data, callback) {
                 if (data.from == data.to) {
                     var r = confirm("Do you want to connect the node to itself?");
@@ -101,6 +118,19 @@ function draw() {
 
 function editNode(data, cancelAction, callback) {
     document.getElementById("node-label").value = data.label;
+
+    if (data.shape == undefined || data.shape != 'triangleDown') {
+        console.log('ola');
+        document.getElementById("node-inicial").checked = false
+    }
+    else
+        document.getElementById("node-inicial").checked = true
+
+    if (data.borderWidth == undefined || data.borderWidth != 5)
+        document.getElementById("node-final").checked = false
+    else
+        document.getElementById("node-final").checked = true
+
     document.getElementById("node-saveButton").onclick = saveNodeData.bind(
         this,
         data,
@@ -127,35 +157,26 @@ function cancelNodeEdit(callback) {
 
 function saveNodeData(data, callback) {
     let selectedNodeId = network.getSelectedNodes()[0]
-    let node = network.body.nodes[selectedNodeId];
 
     data.label = document.getElementById("node-label").value;
 
     if (document.getElementById("node-inicial").checked) {
+
         inicial = selectedNodeId
-        node.setOptions({
-            shape: 'triangleDown',
-        })
+        data.shape = 'triangleDown'
     }
-
-    else node.setOptions({
-        shape: 'ellipse',
-    })
-
+    else {
+        inicial = null
+        data.shape = 'ellipse'
+    }
     if (document.getElementById("node-final").checked) {
         final.push(selectedNodeId)
-        node.setOptions({
-            borderWidth: 5,
-        })
+        data.borderWidth = 5
     }
     else {
         final.pop(selectedNodeId)
-        node.setOptions({
-            borderWidth: 1,
-        })
-
+        data.borderWidth = 1
     }
-    callback(node);
     clearNodePopUp();
     callback(data);
 }
@@ -207,25 +228,11 @@ window.addEventListener("load", () => {
     init();
 });
 
-function nextNode(from, label) {
-    let teste = path.filter(
-        function (path) { return path.label == label && path.from == from }
-    );
-    console.log('teste');
-    console.log(teste);
-    return teste
-}
-
-
 const dfs = (node) => {
     let letras = $('#entrada').val()
     let pos = 0
     let stack = [];
     let aux = false
-    visited = new Array(qtd);
-    for (let i = 0; i < visited.length; i++) {
-        visited[i] = false;
-    }
     stack.push(node);
     while (stack.length > 0) {
         console.log(stack);
@@ -262,13 +269,18 @@ const dfs = (node) => {
 
 $(window).on("load", function () {
 
+
     $('#entrada').keyup(() => {
-        console.log('--------------------------------------');
-        if (dfs(inicial))
-            $('#entrada').css("background-color", "#0f0")
-        else
-            $('#entrada').css("background-color", "#ff7075")
-        console.log('result ' + dfs(inicial));
+        console.log(network.body.nodes);
+        if (inicial != null) {
+            console.log('--------------------------------------');
+            if (dfs(inicial))
+                $('#entrada').css("background-color", "#0f0")
+            else
+                $('#entrada').css("background-color", "#ff7075")
+            console.log('result ' + dfs(inicial));
+        }
+        else alert('Selecionar node inicial')
 
     })
 
