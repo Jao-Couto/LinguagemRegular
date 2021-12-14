@@ -21,24 +21,27 @@
         <h1 class="text-center">Expressão Regular</h1>
 
         <div class="d-flex justify-content-center align-items-center flex-column" style="min-height: 80vh;">
-        <div class="input-group m-1 w-50">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Expressão</span>
+          <div class="input-group m-1 w-50">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Expressão</span>
+              </div>
+              <input type="text" class="form-control" name="expressao" id="expressao" placeholder="a|b">
+          </div>
+          <div id="elementosTeste" class="d-flex justify-content-center align-items-center flex-column w-50 border border-3 p-3 rounded ">
+            <h3>Testes</h3>
+            <div class="input-group w-auto">
+                <div class="input-group-prepend">
+                    <input type="button" class="form-control bg-success" id="teste" value="Testar">
+                </div>
+                <div class="input-group-prepend ">
+                    <input type="button" class="form-control bg-info text-white" id="moreT" value="+">
+                </div>  
             </div>
-            <input type="text" class="form-control" name="expressao" id="expressao">
-        </div>
-        <div class="input-group m-1 w-50">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Entrada 1</span>
+
+            <div class="input-group m-1 ">
+                <input type="text" class="form-control" id="entrada0">
             </div>
-            <input type="text" class="form-control" name="entrada1" id="entrada1">
-        </div>
-        <div class="input-group m-1 w-50">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Entrada 2</span>
-            </div>
-            <input type="text" class="form-control" name="entrada2" id="entrada2">
-        </div>
+          </div>
         </div>
     </div>
 </body>

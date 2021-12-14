@@ -2,6 +2,11 @@ import Regra from './regra.js'
 
 
 $(window).on("load", function () {
+    $('#nav-er').removeClass("active")
+    $('#nav-home').removeClass("active")
+    $('#nav-af').removeClass("active")
+    $('#nav-gr').addClass("active")
+
     let elem = 0;
     let regras = []
     let inicial = 'S'

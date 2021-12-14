@@ -5,7 +5,7 @@ var qtd = 0
 var qtd_edge = 0
 let inicial = null
 let final = []
-
+let elem = 0
 let path = []
 
 
@@ -94,14 +94,14 @@ function draw() {
                 console.log(path);
                 callback(data)
             },
+            deleteEdge: function (data, callback) {
+                //qtd_edge--
+                let selectedEdgeId = network.getSelectedEdges()
+                let edge = network.getConnectedNodes(selectedEdgeId)
+                path[edge[0]][edge[1]] = null
+                callback(data)
+            },
             addEdge: function (data, callback) {
-                if (data.from == data.to) {
-                    var r = confirm("Do you want to connect the node to itself?");
-                    if (r != true) {
-                        callback(null);
-                        return;
-                    }
-                }
                 document.getElementById("edge-operation").innerText = "Add Edge";
                 editEdgeWithoutDrag(data, callback);
             },
@@ -120,7 +120,6 @@ function editNode(data, cancelAction, callback) {
     document.getElementById("node-label").value = data.label;
 
     if (data.shape == undefined || data.shape != 'triangleDown') {
-        console.log('ola');
         document.getElementById("node-inicial").checked = false
     }
     else
@@ -161,12 +160,10 @@ function saveNodeData(data, callback) {
     data.label = document.getElementById("node-label").value;
 
     if (document.getElementById("node-inicial").checked) {
-
         inicial = selectedNodeId
         data.shape = 'triangleDown'
     }
     else {
-        inicial = null
         data.shape = 'ellipse'
     }
     if (document.getElementById("node-final").checked) {
@@ -181,10 +178,11 @@ function saveNodeData(data, callback) {
     callback(data);
 }
 
+
+
 function editEdgeWithoutDrag(data, callback) {
     // filling in the popup DOM elements
     document.getElementById("edge-label").value = '';
-
     document.getElementById("edge-saveButton").onclick = saveEdgeData.bind(
         this,
         data,
@@ -208,11 +206,12 @@ function cancelEdgeEdit(callback) {
     callback(null);
 }
 
+
 function saveEdgeData(data, callback) {
     if (typeof data.to === "object") data.to = data.to.id;
     if (typeof data.from === "object") data.from = data.from.id;
     data.label = document.getElementById("edge-label").value;
-    data.id = 'e' + qtd_edge
+    data.id = 'e' + qtd_edge;
     qtd_edge++
     path[data.from][data.to] = data.label
     console.log(path);
@@ -224,61 +223,70 @@ function init() {
     draw();
 }
 
-window.addEventListener("load", () => {
-    init();
-});
 
 const dfs = (node) => {
-    let letras = $('#entrada').val()
-    let pos = 0
-    let stack = [];
-    let aux = false
-    stack.push(node);
-    while (stack.length > 0) {
-        console.log(stack);
-        node = stack.pop();
-        let fim = final.filter(
-            function (final) {
-                return (final == node)
+    for (let j = 0; j <= elem; j++) {
+        let letras = $('#entrada' + j).val()
+        let pos = 0
+        let stack = [];
+        let aux = false
+        stack.push(node);
+        while (stack.length > 0) {
+            console.log(stack);
+            node = stack.pop();
+            let fim = final.filter(
+                function (final) {
+                    return (final == node)
+                }
+            )
+            if (pos != letras.length || fim.length == 0) {
+                aux = false
+            } else break
+
+
+            console.log(`we visited ${node}`)
+            for (let j = 0; path[node] != undefined && j < path[node].length; j++) {
+
+                if (letras[pos] != undefined && path[node][j] == letras[pos]) {
+                    console.log(path[node][j] + '=' + letras[pos]);
+                    stack.push(j);
+                    aux = true
+
+                }
             }
-        )
-        if (pos != letras.length || fim.length == 0) {
-            aux = false
-        } else return aux
-
-
-        console.log(`we visited ${node}`)
-        for (let j = 0; path[node] != undefined && j < path[node].length; j++) {
-
-            if (letras[pos] != undefined && path[node][j] == letras[pos]) {
-                console.log(path[node][j] + '=' + letras[pos]);
-                stack.push(j);
-                aux = true
-
-            }
+            if (aux)
+                pos++
+            console.log('Volta ----------');
         }
         if (aux)
-            pos++
-        console.log('Volta ----------');
-
-
-
+            $('#entrada' + j).css("background-color", "#0f0")
+        else
+            $('#entrada' + j).css("background-color", "#ff7075")
+        console.log('result ' + aux);
     }
-    return aux
 }
 
 $(window).on("load", function () {
+    $('#nav-er').removeClass("active")
+    $('#nav-home').removeClass("active")
+    $('#nav-af').addClass("active")
+    $('#nav-gr').removeClass("active")
 
+    init();
 
-    $('#entrada').keyup(() => {
-        console.log(network.body.nodes);
+    $("#moreT").click(() => {
+        elem++
+        $('#elementosTeste').append(`<div class="input-group m-1 ">
+        <input type="text" class="form-control" id="entrada`+ elem + `"> 
+    </div>`)
+
+    })
+
+    $('#teste').click(() => {
         if (inicial != null) {
             console.log('--------------------------------------');
-            if (dfs(inicial))
-                $('#entrada').css("background-color", "#0f0")
-            else
-                $('#entrada').css("background-color", "#ff7075")
-            console.log('result ' + dfs(inicial));
+            console.log(path);
+            dfs(inicial)
         }
         else alert('Selecionar node inicial')
 
