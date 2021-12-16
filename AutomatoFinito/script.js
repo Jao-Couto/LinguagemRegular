@@ -70,6 +70,7 @@ function draw() {
         locale: 'pt-br',
         edges: {
             arrows: 'to',
+            color: '#848484'
         },
         manipulation: {
             addNode: function (data, callback) {
@@ -103,7 +104,7 @@ function draw() {
             },
             addEdge: function (data, callback) {
                 document.getElementById("edge-operation").innerText = "Add Edge";
-                editEdgeWithoutDrag(data, callback);
+                addEdgeWithoutDrag(data, callback);
             },
             editEdge: {
                 editWithoutDrag: function (data, callback) {
@@ -183,6 +184,21 @@ function saveNodeData(data, callback) {
 function editEdgeWithoutDrag(data, callback) {
     // filling in the popup DOM elements
     document.getElementById("edge-label").value = '';
+    document.getElementById("edge-saveButton").onclick = saveEdgeDataEdit.bind(
+        this,
+        data,
+        callback
+    );
+    document.getElementById("edge-cancelButton").onclick = cancelEdgeEdit.bind(
+        this,
+        callback
+    );
+    document.getElementById("edge-popUp").style.display = "block";
+}
+
+function addEdgeWithoutDrag(data, callback) {
+    // filling in the popup DOM elements
+    document.getElementById("edge-label").value = '';
     document.getElementById("edge-saveButton").onclick = saveEdgeData.bind(
         this,
         data,
@@ -206,6 +222,15 @@ function cancelEdgeEdit(callback) {
     callback(null);
 }
 
+function saveEdgeDataEdit(data, callback) {
+    if (typeof data.to === "object") data.to = data.to.id;
+    if (typeof data.from === "object") data.from = data.from.id;
+    data.label = document.getElementById("edge-label").value;
+    path[data.from][data.to] = data.label
+    console.log(path);
+    clearEdgePopUp();
+    callback(data);
+}
 
 function saveEdgeData(data, callback) {
     if (typeof data.to === "object") data.to = data.to.id;
@@ -213,7 +238,9 @@ function saveEdgeData(data, callback) {
     data.label = document.getElementById("edge-label").value;
     data.id = 'e' + qtd_edge;
     qtd_edge++
-    path[data.from][data.to] = data.label
+    let label = data.label.split("|")
+    console.log(label);
+    path[data.from][data.to] = label
     console.log(path);
     clearEdgePopUp();
     callback(data);
@@ -224,13 +251,15 @@ function init() {
 }
 
 
-const dfs = (node) => {
+const dfs = () => {
     for (let j = 0; j <= elem; j++) {
         let letras = $('#entrada' + j).val()
+
         let pos = 0
         let stack = [];
         let aux = false
-        stack.push(node);
+        let node
+        stack.push(inicial);
         while (stack.length > 0) {
             console.log(stack);
             node = stack.pop();
@@ -247,11 +276,20 @@ const dfs = (node) => {
             console.log(`we visited ${node}`)
             for (let j = 0; path[node] != undefined && j < path[node].length; j++) {
 
-                if (letras[pos] != undefined && path[node][j] == letras[pos]) {
-                    console.log(path[node][j] + '=' + letras[pos]);
-                    stack.push(j);
-                    aux = true
-
+                if (letras[pos] != undefined && path[node][j] != null) {
+                    let igual = path[node][j].filter((elem) => {
+                        return elem == letras[pos]
+                    })
+                    if (igual.length > 0) {
+                        var edges = network.body.edges;
+                        for (const property in edges) {
+                            if (edges[property].fromId == node && edges[property].toId == j)
+                                network.updateEdge(edges[property].id, { color: '#ff0000' })
+                        }
+                        console.log(igual + '=' + letras[pos]);
+                        stack.push(j);
+                        aux = true
+                    }
                 }
             }
             if (aux)
@@ -283,10 +321,14 @@ $(window).on("load", function () {
     })
 
     $('#teste').click(() => {
+        var edges = network.body.edges;
+        for (const property in edges) {
+            network.updateEdge(edges[property].id, { color: '#848484' })
+        }
         if (inicial != null) {
             console.log('--------------------------------------');
             console.log(path);
-            dfs(inicial)
+            dfs()
         }
         else alert('Selecionar node inicial')
 
